@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 TMDB_API_TOKEN = os.getenv("TMDB_API_TOKEN")
-default = {
+DEFAULT_SENTIMENT = {
             "sentiment": {
                 "overall": "N/A",
                 "positive_reviews": 0,
@@ -23,6 +23,7 @@ class SentimentAnalysisAgent:
     def __init__(self):
         self.tmdb_api_key = TMDB_API_TOKEN
         self.sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert/distilbert-base-uncased-finetuned-sst-2-english", device=0, truncation=True)
+        self.max_length = 512
 
     def fetch_reviews(self, tmdb_id):
         url = f"https://api.themoviedb.org/3/movie/{tmdb_id}/reviews"
@@ -31,22 +32,23 @@ class SentimentAnalysisAgent:
         data = response.json()
         
         if response.status_code == 200 and "results" in data:
-            return [review["content"] for review in data["results"]]
+            reviews = [review["content"][:self.max_length] for review in data["results"]]
+            return reviews
         else:
             return []
 
     def analyze_sentiment(self, state):
         metadata = state.get("metadata")
         if not metadata:
-            return default
+            return DEFAULT_SENTIMENT
 
         tmdb_id = metadata.get("tmdb_id")
         if not tmdb_id or tmdb_id == "N/A":
-            return default
+            return DEFAULT_SENTIMENT
 
         reviews = self.fetch_reviews(tmdb_id)
         if not reviews:
-            return default
+            return DEFAULT_SENTIMENT
 
         sentiments = self.sentiment_analyzer(reviews)
 
