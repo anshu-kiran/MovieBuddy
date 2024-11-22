@@ -1,5 +1,4 @@
 import requests
-import logging
 import os
 from dotenv import load_dotenv
 
@@ -9,7 +8,6 @@ OMDB_API_KEY = os.getenv("OMDB_API_TOKEN")
 class BoxOfficeAgent:
     def __init__(self):
         self.omdb_api_key = OMDB_API_KEY
-        logging.basicConfig(level=logging.INFO)
 
     def fetch_box_office(self, state):
         """Fetch box office data for a movie using OMDB API."""
@@ -30,8 +28,6 @@ class BoxOfficeAgent:
                 box_office = data.get("BoxOffice", "Box office data not available.")
                 return {"box_office": box_office}
             else:
-                logging.warning(f"Failed to fetch box office data: {data.get('Error', 'Unknown error')}")
                 return {"box_office": "Box office data not available."}
         except Exception as e:
-            logging.error(f"Error fetching box office data: {e}")
             return {"box_office": "Box office data not available."}

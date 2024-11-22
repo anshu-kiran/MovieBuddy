@@ -61,4 +61,4 @@ if submitted:
 
             st.write(f"**Overall Sentiment**: {sentiment_data['overall'].capitalize()}")
         else:
-            st.info("No sentiment data available for this movie.")
+            st.info(f"No sentiment data available for **{recommended_movie}**.")

@@ -8,6 +8,7 @@ class MovieState(TypedDict):
     metadata: dict           # Metadata fetched from OMDB
     sentiment: dict          # Sentiment data
     box_office: str          # Box office details
+    recommended_movie: str  # Title of the recommended movie
     output: str              # Final output/recommendation
 
 def create_graph():
@@ -19,14 +20,16 @@ def create_graph():
     llm_agent = LLMAgent()
 
     workflow.add_node("fetch_metadata", lambda state: metadata_agent.fetch_metadata(state))
-    workflow.add_node("analyze_sentiment", lambda state: sentiment_agent.analyze_sentiment(state))
     workflow.add_node("llm_recommendation", lambda state: llm_agent.recommend_movies(state))
+    workflow.add_node("fetch_recommended_metadata", lambda state: metadata_agent.fetch_metadata({"input": state.get("recommended_movie", "Unknown")}))
+    workflow.add_node("analyze_sentiment", lambda state: sentiment_agent.analyze_sentiment(state))
     workflow.add_node("fetch_box_office", lambda state: box_office_agent.fetch_box_office(state))
 
     workflow.set_entry_point("fetch_metadata")
-    workflow.add_edge("fetch_metadata", "analyze_sentiment")
+    workflow.add_edge("fetch_metadata", "llm_recommendation")
+    workflow.add_edge("llm_recommendation", "fetch_recommended_metadata")
+    workflow.add_edge("fetch_recommended_metadata", "analyze_sentiment")
     workflow.add_edge("analyze_sentiment", "fetch_box_office")
-    workflow.add_edge("fetch_box_office", "llm_recommendation")
-    workflow.add_edge("llm_recommendation", END)
+    workflow.add_edge("fetch_box_office", END)
 
     return workflow.compile()

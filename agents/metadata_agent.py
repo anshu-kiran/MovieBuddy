@@ -15,7 +15,6 @@ class MetadataAgent:
         self.tmdb_api_key = TMDB_API_TOKEN
 
     def fetch_metadata(self, state):
-        """Fetch metadata from OMDB and TMDB."""
         title = state["input"]
 
         omdb_url = f"http://www.omdbapi.com/?t={title}&apikey={self.omdb_api_key}"
